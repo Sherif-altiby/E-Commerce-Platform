@@ -1,41 +1,51 @@
 import mongoose from "mongoose";
 
+const { Schema, model, models } = mongoose;
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Please provide a name"],
-      trim: true,
-    },
     email: {
       type: String,
-      required: [true, "Please provide an email"],
+      required: [true, "Email is required."],
       unique: true,
+      lowercase: true,
+      trim: true,
     },
-    phone: {
-      type: String,  
-      required: [true, "Please provide a phone number"],
-      unique: true,
-    },
-    password: {
+    passwordHash: {
       type: String,
-      required: [true, "Please provide a password"],
-      minlength: 6,
+      required: [true, "Password hash is required."],
       select: false,
     },
-    role: {
+    userType: {
       type: String,
       enum: ["customer", "vendor", "admin"],
+      required: true,
       default: "customer",
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended", "banned", "pending"],
+      default: "active",
+      index: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
     },
     avatar: {
-        type: String,
-        required: [true,'Please provide an avatar']
+      type: String,
+      trim: true,
     },
-    createdAt: {
+    emailVerifiedAt: {
       type: Date,
-      default: Date.now,
+    },
+    lastLoginAt: {
+      type: Date,
+    },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -43,6 +53,8 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-const User = mongoose.model("User", userSchema);
+userSchema.index({ email: 1 }, { unique: true });
+
+const User = models.User || model("User", userSchema);
 
 export default User;
